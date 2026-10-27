@@ -1,0 +1,15 @@
+# build output
+build/
+build_en/
+dist/
+dist_en/
+*.spec
+
+# runtime data written next to the exe
+config.json
+cache/
+enrun/
+
+# python
+__pycache__/
+*.pyc
