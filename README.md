@@ -1,5 +1,10 @@
 # Deadlock Rank Checker
 
+[![Release](https://img.shields.io/github/v/release/XuMi66/deadlock-rank-checker?label=release)](../../releases/latest)
+[![License](https://img.shields.io/github/license/XuMi66/deadlock-rank-checker)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11%20x64-0078D6)](../../releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/XuMi66/deadlock-rank-checker/release.yml?label=build)](../../actions)
+
 A tiny Windows desktop app that reads your **Deadlock ranked match history** and lays it out in one screen: rank progress, the last 30 ranked games, and — more usefully — **who you keep meeting**.
 
 Built for the situation where you queue solo and wonder *"haven't I seen this guy before?"* The app keeps a rolling scan of your recent ranked games and shows teammates/opponents you have met more than once, how those games went, and when you last ran into them.
@@ -79,7 +84,9 @@ py -3.11 -m PyInstaller --noconfirm --onefile --noconsole --clean ^
     --name DeadlockRankChecker --distpath dist --workpath build --specpath build coach_en.py
 ```
 
-`src/coach_en.py` is the English build, `src/coach.py` the Chinese one. Only Python's standard library is used at runtime (`tkinter`, `urllib`, `json`, `sqlite`-free).
+`src/coach_en.py` is the English build, `src/coach.py` the Chinese one.
+
+Pushing a `v*` tag rebuilds both executables on GitHub Actions and attaches them to a release (`.github/workflows/release.yml`). The workflow can also be started manually from the Actions tab — it uploads the zips as run artifacts without touching releases. Only Python's standard library is used at runtime (`tkinter`, `urllib`, `json`, `sqlite`-free).
 
 The application icon is a Deadlock game asset and is therefore **not** included here; pass your own `--icon your.ico` if you rebuild.
 
