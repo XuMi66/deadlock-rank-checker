@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-10-27
+
+- Player names in the three player tables are now clickable: one click opens that player's Steam profile
+- Uses the profile URL returned by the API when available, otherwise falls back to `steamcommunity.com/profiles/<steamid64>`
+- Status bar confirms which profile was opened
+
 ## 1.0.0 — 2026-10-27
 
 First public release.

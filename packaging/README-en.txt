@@ -34,3 +34,5 @@ THINGS TO KNOW
 
 Not affiliated with Valve. Deadlock belongs to Valve Corporation.
 Made by 九千须弥
+
+Tip: click any player name to open their Steam profile.

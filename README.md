@@ -26,6 +26,7 @@ Built for the situation where you queue solo and wonder *"haven't I seen this gu
 | **Frequent teammates** | Players who were on your side more than once: games together, win rate, last meeting |
 | **Frequent opponents** | Players who were against you more than once: games, your win rate against them, last meeting |
 | **Teammates & opponents** | People you have met on *both* sides, with the split (`3 games as teammate / 2 as opponent`) |
+| **Click a name** | Player names are links — clicking one opens that player's Steam profile in your browser |
 | **How to play this one** | A few rule-based notes built from the numbers above — streaks, points swing, most frequent teammate, damage gap of the last game |
 
 Every table is sortable (click a column header, click again to reverse) and scrollable. Default ordering is "met most often first".

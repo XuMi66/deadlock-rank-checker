@@ -435,6 +435,7 @@ class App:
         self.data = Data(cfg)
         self.busy = False
         # per-table sort state: which -> (column, descending). default: most meetings first
+        self.row_acc = {}
         self.sort_state = {"mate": ("n", True), "enemy": ("n", True), "both": ("n", True)}
 
         root.title("Deadlock Rank Checker")
@@ -515,6 +516,9 @@ class App:
             sb = ttk.Scrollbar(wrap, orient="vertical", command=tv.yview)
             sb.pack(side="right", fill="y", padx=(4, 0))
             tv.configure(yscrollcommand=sb.set)
+            tv.tag_configure("link", foreground="#79b8ff")
+            tv.bind("<Button-1>", lambda e, t=tv, w=which: self._on_name_click(t, w, e))
+            tv.bind("<Motion>", lambda e, t=tv: self._on_name_motion(t, e))
             setattr(self, attr_name, tv)
             setattr(self, attr_name + "_sb", sb)
 
@@ -541,6 +545,9 @@ class App:
         self.tv_both_sb = ttk.Scrollbar(bwrap, orient="vertical", command=self.tv_both.yview)
         self.tv_both_sb.pack(side="right", fill="y", padx=(4, 0))
         self.tv_both.configure(yscrollcommand=self.tv_both_sb.set)
+        self.tv_both.tag_configure("link", foreground="#79b8ff")
+        self.tv_both.bind("<Button-1>", lambda e: self._on_name_click(self.tv_both, "both", e))
+        self.tv_both.bind("<Motion>", lambda e: self._on_name_motion(self.tv_both, e))
 
         foot = tk.Frame(root, bg=BG)
         foot.pack(fill="x", padx=22, pady=(0, 16))
@@ -600,6 +607,21 @@ class App:
         except Exception as e:
             messagebox.showerror("Launch failed", str(e))
 
+    def profile_url(self, acc):
+        d = self.data
+        url = ((d.names.get(acc) or {}).get("profileurl") or "").strip()
+        if not url:
+            url = "https://steamcommunity.com/profiles/%d" % (int(acc) + STEAM64)
+        return url
+
+    def open_player(self, acc):
+        try:
+            os.startfile(self.profile_url(acc))
+            self.status.config(text="Opened Steam profile for %s"
+                               % ((self.data.names.get(acc) or {}).get("personaname") or acc))
+        except Exception as e:
+            messagebox.showerror("Steam", str(e), parent=self.root)
+
     def profile(self):
         d = self.data
         url = ((d.me or {}).get("profileurl") or "").strip()
@@ -635,6 +657,23 @@ class App:
         self.data.acc = int(self.cfg["account_id"])
         self.data.fetch()
         self.root.after(0, self._render)
+
+    def _on_name_click(self, tree, which, event):
+        if tree.identify_column(event.x) != "#1":
+            return None
+        iid = tree.identify_row(event.y)
+        if not iid:
+            return None
+        acc = (self.row_acc.get(which) or {}).get(iid)
+        if acc:
+            self.open_player(acc)
+        return "break"
+
+    def _on_name_motion(self, tree, event):
+        over = tree.identify_column(event.x) == "#1" and bool(tree.identify_row(event.y))
+        want = "hand2" if over else ""
+        if tree.cget("cursor") != want:
+            tree.configure(cursor=want)
 
     # ---- sorting and filling ----
     HEADS = {"mate": {"nm": "Player", "n": "Games", "wr": "Win %", "last": "Last"},
@@ -688,12 +727,14 @@ class App:
         rows = sorted(list(rows or []), key=self._key(which, key), reverse=desc)
         for i in tv.get_children():
             tv.delete(i)
+        self.row_acc[which] = {}
         for aid, st in rows:
-            nm = (d.names.get(aid) or {}).get("personaname") or ("Player %d" % aid)
+            nm = (d.names.get(aid) or {}).get("personaname") or ("%s" % aid)
             n2 = st.get("n") or 1
-            tv.insert("", "end", values=(nm[:20], st.get("n", 0),
+            iid = tv.insert("", "end", tags=("link",), values=(nm[:20], st.get("n", 0),
                                          "%.0f%%" % (100.0 * st.get("w", 0) / n2),
                                          mdate(st.get("last", 0))))
+            self.row_acc[which][iid] = aid
         self._refresh_heads(which, tv)
         try:
             tv.yview_moveto(0)
@@ -712,15 +753,17 @@ class App:
         tv = self.tv_both
         for i in tv.get_children():
             tv.delete(i)
+        self.row_acc["both"] = {}
         for aid, st in rows:
-            nm = (d.names.get(aid) or {}).get("personaname") or ("Player %d" % aid)
-            tv.insert("", "end", values=(
+            nm = (d.names.get(aid) or {}).get("personaname") or ("%s" % aid)
+            iid = tv.insert("", "end", tags=("link",), values=(
                 nm[:24], st.get("n", 0),
                 "%d / %d" % (st.get("w", 0), st.get("n", 0) - st.get("w", 0)),
                 "%d game%s, %d W" % (st.get("mate_n", 0), "" if st.get("mate_n", 0) == 1 else "s", st.get("mate_w", 0)),
                 "%d game%s, %d W" % (st.get("enemy_n", 0), "" if st.get("enemy_n", 0) == 1 else "s", st.get("enemy_w", 0)),
                 mdate(st.get("last", 0)),
             ))
+            self.row_acc["both"][iid] = aid
         self._refresh_heads("both", tv)
         try:
             tv.yview_moveto(0)
